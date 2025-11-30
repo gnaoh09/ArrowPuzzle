@@ -1,3 +1,4 @@
 asset-game-level/*
 venv/*
+lib/*
 *.html
