@@ -1,0 +1,24 @@
+Metric,Value
+total_arrows,14
+total_dependencies,21
+max_in_degree,5
+edges_per_arrow,1.5
+dependency_density,0.11538461538461539
+has_cycle_bool,False
+approx_max_dependency_depth_nodes,4
+scc_scc_count,14
+scc_scc_max_size,1
+scc_scc_avg_size,1.0
+scc_scc_sizes,"[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]"
+scc_sizes,"[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]"
+deadlock_severity_total,0
+deadlock_details,[]
+max_row_blockers,6
+max_col_blockers,7
+avg_row_blockers,4.818181818181818
+avg_col_blockers,4.818181818181818
+crowded_rows,10
+crowded_cols,11
+critical_longest_nodes,4
+critical_chain_scc_indices,"[4, 3, 1, 0]"
+critical_edges_on_chain,4

@@ -1,0 +1,16 @@
+Metric,Value
+total_arrows,57
+total_dependencies,177
+max_in_degree,14
+edges_per_arrow,3.1052631578947367
+dependency_density,0.05545112781954887
+has_cycle_bool,False
+approx_max_dependency_depth_nodes,17
+max_row_blockers,14
+max_col_blockers,19
+avg_row_blockers,7.466666666666667
+avg_col_blockers,9.25
+crowded_rows,20
+crowded_cols,21
+critical_longest_nodes,17
+critical_edges_on_chain,30

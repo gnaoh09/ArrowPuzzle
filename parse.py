@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import networkx as nx
 import matplotlib.pyplot as plt
-from pyvis.network import Network
+# from pyvis.network import Network
 
 def load_level(path):
     with open(path, "r") as f:
@@ -14,48 +14,61 @@ def load_level(path):
 # -----------------------------------------
 
 def get_direction(nodes):
-    x1, y1 = nodes[0]["x"], nodes[0]["y"]
-    x2, y2 = nodes[1]["x"], nodes[1]["y"]
+    x1, y1 = nodes[-2]["x"], nodes[-2]["y"]
+    x2, y2 = nodes[-1]["x"], nodes[-1]["y"]
 
-    if x2 == x1 and y2 < y1:
-        return "UP"
-    if x2 == x1 and y2 > y1:
-        return "DOWN"
-    if y2 == y1 and x2 > x1:
-        return "RIGHT"
-    if y2 == y1 and x2 < x1:
-        return "LEFT"
+    dx = x2 - x1
+    dy = y2 - y1
+
+    # Cardinal directions
+    if dx == 0 and dy > 0:  return "UP"
+    if dx == 0 and dy < 0:  return "DOWN"
+    if dy == 0 and dx > 0:  return "RIGHT"
+    if dy == 0 and dx < 0:  return "LEFT"
+
+    # Diagonal (45 degrees)
+    if abs(dx) == abs(dy):
+        if dx > 0 and dy > 0: return "DIAG_UP_RIGHT"
+        if dx > 0 and dy < 0: return "DIAG_DOWN_RIGHT"
+        if dx < 0 and dy > 0: return "DIAG_UP_LEFT"
+        if dx < 0 and dy < 0: return "DIAG_DOWN_LEFT"
+
     return None
 
-# -----------------------------------------
-# Check if arrow A is blocked by arrow B
-# -----------------------------------------
+def ray_blocks_arrow(A_head_x, A_head_y, direction, B_nodes):
+    B_set = {(n["x"], n["y"]) for n in B_nodes}
 
-def is_blocked(A, B):
-    head = A["nodes"][0]
-    hx, hy = head["x"], head["y"]
-    direction = get_direction(A["nodes"])
+    x, y = A_head_x, A_head_y
 
-    for n in B["nodes"]:
-        bx, by = n["x"], n["y"]
+    for _ in range(100):  # maximum grid size
+        if direction == "UP":           y += 1
+        elif direction == "DOWN":       y -= 1
+        elif direction == "RIGHT":      x += 1
+        elif direction == "LEFT":       x -= 1
+        elif direction == "DIAG_UP_RIGHT":   x += 1; y += 1
+        elif direction == "DIAG_UP_LEFT":    x -= 1; y += 1
+        elif direction == "DIAG_DOWN_RIGHT": x += 1; y -= 1
+        elif direction == "DIAG_DOWN_LEFT":  x -= 1; y -= 1
 
-        if direction == "UP":
-            if bx == hx and by > hy:     # any node above A
-                return True
-
-        elif direction == "DOWN":
-            if bx == hx and by < hy:
-                return True
-
-        elif direction == "LEFT":
-            if by == hy and bx > hx:
-                return True
-
-        elif direction == "RIGHT":
-            if by == hy and bx < hx:
-                return True
+        # collision check
+        if (x, y) in B_set:
+            return True
 
     return False
+
+def is_blocked(A, B):
+    nodesA = A["nodes"]
+    nodesB = B["nodes"]
+
+    head = nodesA[-1]  # last node is head in gameplay
+    hx, hy = head["x"], head["y"]
+
+    direction = get_direction(nodesA)
+    if direction is None:
+        return False
+
+    return ray_blocks_arrow(hx, hy, direction, nodesB)
+
 
 # -----------------------------------------
 # Build dependency graph
@@ -116,37 +129,13 @@ def draw_dependency_graph(graph, arrows):
     plt.axis("off")
     plt.show()
 
-def draw_dependency_graph_interactive(graph, arrows, output_html="dependency_graph.html"):
-    net = Network(height="800px", width="100%", directed=True, notebook=False)
-    net.barnes_hut()  # force simulation layout
-
-    # Add nodes
-    for i in range(len(arrows)):
-        arrow = arrows[i]
-        color = arrow.get("color", "gray")
-
-        net.add_node(
-            i,
-            label=f"A{i}",
-            title=f"Arrow {i}<br>Color: {color}<br>Dir: {get_direction(arrow['nodes'])}",
-            color=color
-        )
-
-    # Add edges (dependencies)
-    for a, deps in graph.items():
-        for b in deps:
-            net.add_edge(a, b, title=f"A{a} depends on A{b}")
-
-    # Generate HTML file
-    net.write_html(output_html)
-    print(f"Interactive dependency graph generated: {output_html}")
 
 # -------------------------------
 # Main
 # -------------------------------
 
 if __name__ == "__main__":
-    level = load_level("/Users/hoangnguyen/Documents/py/Arrow/asset-game-level/lv8.json")
+    level = load_level("/Users/hoangnguyen/Documents/py/ArrowPuzzle/asset-game-level/lv8.json")
     graph = build_dependency_graph(level)
     # draw_dependency_graph(graph, level["arrows"])
     # draw_dependency_graph_interactive(graph, level["arrows"])

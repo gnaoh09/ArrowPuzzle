@@ -1,199 +1,364 @@
+import os
+import re
 import json
-import itertools
 import csv
 import networkx as nx
-from collections import deque, defaultdict
-
+import pandas as pd
+from collections import defaultdict, deque
 
 # ============================================================
 # 1. PARSER: LOAD LEVEL JSON
 # ============================================================
-
 def load_level(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 # ============================================================
-# 2. BUILD DEPENDENCY GRAPH
+# 2. SPATIAL INDEX + BUILD DEPENDENCY GRAPH (OPTIMIZED)
 # ============================================================
+def interpolate_line(x1, y1, x2, y2):
+    """Return all grid cells on the line from (x1,y1) to (x2,y2)."""
+    points = []
 
-def is_blocking(nodes_A, nodes_B):
-    """
-    Một mũi tên A bị chắn bởi B nếu:
-    - Hai node đầu tiên của A tạo vector hướng, nhưng A bị chặn nếu B có bất kỳ node
-      nằm trên hướng đó.
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    x, y = x1, y1
+    sx = 1 if x2 > x1 else -1
+    sy = 1 if y2 > y1 else -1
 
-    Giả sử:
-        A_tip = nodes_A[0]
-        A_next = nodes_A[1]
-        Hướng A = vector (dx, dy)
-    Nếu B chứa điểm trên ray hướng của A → A depends on B.
-
-    Lưu ý: Mô hình đơn giản theo mô tả của bạn.
-    """
-    A_tip = nodes_A[0]
-    A_next = nodes_A[1]
-
-    dx = A_next["x"] - A_tip["x"]
-    dy = A_next["y"] - A_tip["y"]
-
-    # Hướng chuẩn (horizontal/vertical)
-    if dx != 0:
-        direction = ("x", dx)
-        axis = "x"
-        orth = "y"
+    if dx >= dy:
+        err = dx / 2
+        while x != x2:
+            points.append((x, y))
+            err -= dy
+            if err < 0:
+                y += sy
+                err += dx
+            x += sx
     else:
-        direction = ("y", dy)
-        axis = "y"
-        orth = "x"
+        err = dy / 2
+        while y != y2:
+            points.append((x, y))
+            err -= dx
+            if err < 0:
+                x += sx
+                err += dy
+            y += sy
 
-    # B chặn A nếu trong nodes_B có điểm phía trước A_tip theo hướng
-    for p in nodes_B:
-        if axis == "x":
-            if p["y"] == A_tip["y"]:
-                if dx > 0 and p["x"] > A_tip["x"]:
-                    return True
-                if dx < 0 and p["x"] < A_tip["x"]:
-                    return True
-        else:  # movement along y
-            if p["x"] == A_tip["x"]:
-                if dy > 0 and p["y"] > A_tip["y"]:
-                    return True
-                if dy < 0 and p["y"] < A_tip["y"]:
-                    return True
+    points.append((x2, y2))
+    return points
 
-    return False
+def build_spatial_index(level_json):
+    arrows = level_json["arrows"]
+    coord_map = defaultdict(set)
+    rows = defaultdict(set)
+    cols = defaultdict(set)
 
+    for idx, a in enumerate(arrows):
+        nodes = a["nodes"]
+
+        # Interpolate every segment
+        full_cells = []
+        for i in range(len(nodes) - 1):
+            x1, y1 = nodes[i]["x"], nodes[i]["y"]
+            x2, y2 = nodes[i+1]["x"], nodes[i+1]["y"]
+            segment = interpolate_line(x1, y1, x2, y2)
+            full_cells.extend(segment)
+
+        # Add to spatial maps
+        for (x, y) in full_cells:
+            coord_map[(x, y)].add(idx)
+            rows[y].add(idx)
+            cols[x].add(idx)
+
+    size = level_json.get("size", {})
+    max_x = size.get("x", None)
+    max_y = size.get("y", None)
+
+    return coord_map, rows, cols, max_x, max_y
+
+def normalize_direction(nodes):
+    """Return normalized direction vector (dx, dy) of arrow head."""
+    head = nodes[-1]
+    prev = nodes[-2]
+
+    dx = head["x"] - prev["x"]
+    dy = head["y"] - prev["y"]
+
+    # Normalize direction to steps
+    if dx != 0: dx = 1 if dx > 0 else -1
+    if dy != 0: dy = 1 if dy > 0 else -1
+
+    return dx, dy
 
 def build_dependency_graph(level_json):
-    G = nx.DiGraph()
     arrows = level_json["arrows"]
+    coord_map, rows, cols, max_x, max_y = build_spatial_index(level_json)
+    G = nx.DiGraph()
+    n = len(arrows)
 
-    for i in range(len(arrows)):
+    for i in range(n):
         G.add_node(i)
 
-    # Check all pairs
-    for i, j in itertools.permutations(range(len(arrows)), 2):
-        A = arrows[i]["nodes"]
-        B = arrows[j]["nodes"]
-        if is_blocking(A, B):
-            G.add_edge(i, j)  # j blocks i → i depends on j
+    # Infer size if missing
+    if max_x is None or max_y is None:
+        xs, ys = [], []
+        for a in arrows:
+            for nd in a["nodes"]:
+                xs.append(nd["x"])
+                ys.append(nd["y"])
+        max_x = max(xs) + 1
+        max_y = max(ys) + 1
+
+    # Build dependency
+    for i, a in enumerate(arrows):
+        nodes = a["nodes"]
+        if len(nodes) < 2:
+            continue
+
+        # Correct: tip is the LAST node
+        tip = nodes[-1]
+
+        dx, dy = normalize_direction(nodes)
+        x, y = tip["x"] + dx, tip["y"] + dy
+
+        # Ray cast until out of bounds
+        while 0 <= x < max_x and 0 <= y < max_y:
+            if (x, y) in coord_map:
+                for j in coord_map[(x, y)]:
+                    if j != i:
+                        G.add_edge(i, j)
+            x += dx
+            y += dy
 
     return G
 
-# -------------------------------
-# 4. GRAPH METRICS
-# -------------------------------
+# ============================================================
+# 3. GRAPH METRICS (existing + optimized)
+# ============================================================
 def metric_total_arrows(data):
     return len(data["arrows"])
-
 
 def metric_total_dependencies(G):
     return G.number_of_edges()
 
-
 def metric_max_in_degree(G):
-    return max([deg for _, deg in G.in_degree()], default=0)
-
-
-def metric_max_out_degree(G):
-    return max([deg for _, deg in G.out_degree()], default=0)
-
-
-def metric_degree_variance(G):
-    degrees = [deg for _, deg in G.degree()]
-    if not degrees:
-        return 0
-    mean = sum(degrees) / len(degrees)
-    var = sum((d - mean) ** 2 for d in degrees) / len(degrees)
-    return var
-
+    return max((deg for _, deg in G.in_degree()), default=0)
 
 def metric_edges_per_arrow(G):
     n = G.number_of_nodes()
     if n == 0:
-        return 0
+        return 0.0
     return G.number_of_edges() / n
 
-
-def metric_has_cycle(G):
-    cycles = list(nx.simple_cycles(G))
-    return len(cycles)
-
-def metric_approx_max_dependency_depth(G, depth_limit=100):
+def metric_has_cycle_fast(G):
     """
-    Approximate longest path depth even if cycles exist
-    - depth_limit: maximum depth to explore to avoid infinite loops
+    Fast check for the presence of cycles (boolean). Uses networkx built-in O(V+E).
+    Also return count of SCCs with size>1 (we use for cycle severity too).
     """
-    def dfs(node, visited):
-        if node in visited:
-            return 0  # stop at cycle
-        if len(visited) >= depth_limit:
-            return len(visited)
-        visited.add(node)
-        max_depth = 0
-        for succ in G.successors(node):
-            max_depth = max(max_depth, dfs(succ, visited.copy()))
-        return 1 + max_depth
-
-    longest = 0
-    for node in G.nodes():
-        longest = max(longest, dfs(node, set()))
-    return longest
-
-
-def metric_connected_components(G):
-    UG = G.to_undirected()
-    return nx.number_connected_components(UG)
-
+    is_dag = nx.is_directed_acyclic_graph(G)
+    return (not is_dag)
 
 def metric_dependency_density(G):
     n = G.number_of_nodes()
     e = G.number_of_edges()
     if n <= 1:
-        return 0
+        return 0.0
     return e / (n * (n - 1))
 
+def metric_blocking_density_per_axis(level_json, G):
+    """
+    Blocking Density per Axis:
+      - For each row: count how many unique arrows occupy that row
+      - For each column: count how many unique arrows occupy that column
+    Returns:
+      - row_count_map, col_count_map, max_row_blockers, max_col_blockers, avg_row_blockers, avg_col_blockers
+    """
+    rows = defaultdict(set)
+    cols = defaultdict(set)
+    for idx, a in enumerate(level_json["arrows"]):
+        for n in a["nodes"]:
+            rows[n["y"]].add(idx)
+            cols[n["x"]].add(idx)
 
+    row_counts = [len(s) for s in rows.values()] if rows else [0]
+    col_counts = [len(s) for s in cols.values()] if cols else [0]
 
+    max_row = max(row_counts) if row_counts else 0
+    max_col = max(col_counts) if col_counts else 0
+    avg_row = sum(row_counts) / len(row_counts) if row_counts else 0.0
+    avg_col = sum(col_counts) / len(col_counts) if col_counts else 0.0
+
+    # Also compute fraction of rows/cols that are "crowded" (>= threshold)
+    threshold = max(2, int(0.1 * len(level_json["arrows"])))  # heuristic
+    crowded_rows = sum(1 for c in row_counts if c >= threshold)
+    crowded_cols = sum(1 for c in col_counts if c >= threshold)
+
+    return {
+        "max_row_blockers": max_row,
+        "max_col_blockers": max_col,
+        "avg_row_blockers": avg_row,
+        "avg_col_blockers": avg_col,
+        "crowded_rows": crowded_rows,
+        "crowded_cols": crowded_cols,
+    }
+
+def metric_critical_path_load(G):
+    """
+    Critical Path Load:
+      - Condense SCCs into DAG (cG). Each node in cG has weight = size of SCC.
+      - Compute longest path (in terms of original nodes) using DP on DAG.
+      - Also compute number of edges that lie on any longest path (approx).
+    Return:
+      - longest_path_nodes_count
+      - longest_path_scc_chain (list of condensed nodes forming one longest path)
+      - critical_edges_count (approx count of original edges that are on longest path chain)
+    """
+    if G.number_of_nodes() == 0:
+        return {
+            "critical_longest_nodes": 0,
+            "critical_edges_on_chain": 0
+        }
+
+    cG = nx.condensation(G)
+    weights = {n: len(cG.nodes[n]["members"]) for n in cG.nodes()}
+
+    topo = list(nx.topological_sort(cG))
+    # dp_forward[n] = max nodes count path ending at n
+    dp_forward = {n: weights[n] for n in cG.nodes()}
+    parent = {n: None for n in cG.nodes()}  # store predecessor for one longest path
+    for u in topo:
+        for v in cG.successors(u):
+            cand = dp_forward[u] + weights[v]
+            if cand > dp_forward[v]:
+                dp_forward[v] = cand
+                parent[v] = u
+
+    # find node with max dp_forward
+    end_node = max(dp_forward, key=lambda k: dp_forward[k])
+    longest_nodes = dp_forward[end_node]
+
+    # reconstruct one longest chain of condensed nodes
+    chain = []
+    cur = end_node
+    while cur is not None:
+        chain.append(cur)
+        cur = parent[cur]
+    chain = list(reversed(chain))
+
+    # count original edges that are internal to these SCCs chain or between consecutive SCCs
+    # collect members:
+    chain_members = set()
+    for scc_idx in chain:
+        chain_members.update(cG.nodes[scc_idx]["members"])
+    # count edges among chain members in original G
+    edges_on_chain = 0
+    for u, v in G.edges():
+        if u in chain_members and v in chain_members:
+            edges_on_chain += 1
+
+    return {
+        "critical_longest_nodes": longest_nodes,
+        "critical_edges_on_chain": edges_on_chain
+    }
+
+# ============================================================
+# 5. EXPORT
+# ============================================================
 def export_metrics_to_csv(metrics_dict, out_path):
+    rows = []
+    for k, v in metrics_dict.items():
+        # For complex objects (lists/dicts) convert to JSON string for CSV readability
+        if isinstance(v, (list, dict)):
+            rows.append([k, json.dumps(v, ensure_ascii=False)])
+        else:
+            rows.append([k, v])
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["Metric", "Value"])
-        for k, v in metrics_dict.items():
-            writer.writerow([k, v])
-
+        writer.writerows(rows)
 
 # ============================================================
-# ====== 6. MAIN FUNCTION ====================================
+# 6. MAIN ANALYSIS FUNCTION
 # ============================================================
-
 def analyze_level_graph(json_path, csv_path="level_metrics.csv"):
     data = load_level(json_path)
     G = build_dependency_graph(data)
-    metrics = {
+
+    # Basic metrics
+    basic = {
         "total_arrows": metric_total_arrows(data),
         "total_dependencies": metric_total_dependencies(G),
         "max_in_degree": metric_max_in_degree(G),
-        "max_out_degree": metric_max_out_degree(G),
-        "degree_variance": metric_degree_variance(G),
         "edges_per_arrow": metric_edges_per_arrow(G),
-        "approx_max_dependency_depth": metric_approx_max_dependency_depth(G),
-        "has_cycle": metric_has_cycle(G),
-        "connected_components": metric_connected_components(G),
         "dependency_density": metric_dependency_density(G),
+        "has_cycle_bool": metric_has_cycle_fast(G),
     }
 
-    export_metrics_to_csv(metrics, csv_path)
+    # Blocking density per axis
+    blocking_density = metric_blocking_density_per_axis(data, G)
 
+    # Critical path load
+    critical_path = metric_critical_path_load(G)
+
+    metrics = {}
+    metrics.update(basic)
+
+    metrics.update(blocking_density)
+    metrics.update(critical_path)
+
+    # Export CSV
+    export_metrics_to_csv(metrics, csv_path)
     print("CSV exported:", csv_path)
     return metrics, G
 
-# ============================================================
-# RUN AS SCRIPT
-# ============================================================
+def sort_level_files(files):
+    """
+    Sort files like lv0.json, lv1.json, lv10.json numerically by level index.
+    """
+    def extract_level_num(f):
+        match = re.search(r'lv(\d+)\.json', f)
+        return int(match.group(1)) if match else -1
 
+    return sorted(files, key=extract_level_num)
+
+def analyze_levels_in_folder(folder_path, csv_path="all_levels_metrics.csv", n_level=None):
+    """
+    Analyze multiple level JSON files in a folder and save metrics to a CSV.
+    
+    Args:
+        folder_path (str): Path to folder containing level JSON files.
+        csv_path (str): Output CSV path.
+        n_level (int, optional): Maximum number of levels to process. If None, process all.
+    """
+    all_metrics = []
+    files = [f for f in os.listdir(folder_path) if f.endswith(".json")]
+    files = sort_level_files(files)
+    if n_level is not None:
+        files = files[:n_level]
+
+
+    for file_name in files:
+        json_path = os.path.join(folder_path, file_name)
+        metrics, _ = analyze_level_graph(json_path)
+        metrics_row = {"Level_Name": file_name}
+        metrics_row.update(metrics)
+        all_metrics.append(metrics_row)
+
+    # Convert to DataFrame and export
+    df = pd.DataFrame(all_metrics)
+    df.to_csv(csv_path, index=False)
+    print(f"CSV exported for {len(all_metrics)} levels to:", csv_path)
+    return df
+# ============================================================
+# RUN AS SCRIPT (EXAMPLE)
+# ============================================================
 if __name__ == "__main__":
-    analyze_level_graph("/Users/hoangnguyen/Documents/py/Arrow/asset-game-level/lv50.json",
-                        csv_path="/Users/hoangnguyen/Documents/py/Arrow/lv50_metrics.csv")
+    # json_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/asset-game-level/lv8.json"
+    # csv_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/lv8_metrics_new.csv"
+    # metrics, G = analyze_level_graph(json_path, csv_path=csv_path)
+
+    folder_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv/"
+    csv_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv_0412.csv"
+    df = analyze_levels_in_folder(folder_path, csv_path=csv_path, n_level=100)
+    
