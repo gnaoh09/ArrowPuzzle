@@ -3,3 +3,5 @@ asset-game-level/*
 venv/*
 lib/*
 *.html
+*.png
+.DS_Store
