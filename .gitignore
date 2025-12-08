@@ -4,4 +4,5 @@ venv/*
 lib/*
 *.html
 *.png
+*.txt
 .DS_Store
