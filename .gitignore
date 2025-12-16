@@ -1,8 +1,11 @@
 asset-game-level/*
 100lv/*
+output_full_3/*
 venv/*
 lib/*
 *.html
 *.png
 *.txt
 .DS_Store
+*.apk
+*.xlsx

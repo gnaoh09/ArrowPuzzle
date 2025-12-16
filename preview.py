@@ -235,6 +235,7 @@ def draw_level_preview(level_data, save_path=None, show=True, interactive=True):
     fig.tight_layout()
     
     if save_path:
+        fig.savefig(save_path, dpi=200, bbox_inches='tight')
         # plt.savefig(save_path, dpi=200, bbox_inches='tight')
         print(f"Saved to {save_path}")
     
@@ -247,7 +248,7 @@ def draw_level_preview(level_data, save_path=None, show=True, interactive=True):
 # Main execution
 # ----------------------------------------
 if __name__ == "__main__":
-    with open("/Users/hoangnguyen/Documents/py/ArrowPuzzle/asset-game-level/lv8.json", "r") as f:
+    with open("/Users/hoangnguyen/Documents/py/ArrowPuzzle/output_full_3/lv80_original.json", "r") as f:
         level = json.load(f)
     draw_level_preview(level, save_path="level_preview.png", show=True, interactive=False)
    
