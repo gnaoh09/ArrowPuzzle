@@ -1,0 +1,974 @@
+{
+  "alpha_time": 0.0019478797912597656,
+  "moves": 29,
+  "branching": 3.3793103448275863,
+  "difficulty": 4.066115932210388,
+  "win": true,
+  "remaining_arrows": 0,
+  "blackhole_deaths": 0,
+  "steps": [
+    {
+      "move_index": 0,
+      "arrow_moved": 23,
+      "arrow_nodes": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 1
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 1,
+      "arrow_moved": 14,
+      "arrow_nodes": [
+        {
+          "x": 3,
+          "y": 5
+        },
+        {
+          "x": 3,
+          "y": 6
+        },
+        {
+          "x": 3,
+          "y": 7
+        },
+        {
+          "x": 3,
+          "y": 8
+        },
+        {
+          "x": 2,
+          "y": 8
+        },
+        {
+          "x": 2,
+          "y": 7
+        },
+        {
+          "x": 1,
+          "y": 7
+        },
+        {
+          "x": 0,
+          "y": 7
+        },
+        {
+          "x": 0,
+          "y": 6
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 3
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 2,
+      "arrow_moved": 17,
+      "arrow_nodes": [
+        {
+          "x": 7,
+          "y": 0
+        },
+        {
+          "x": 7,
+          "y": 1
+        },
+        {
+          "x": 8,
+          "y": 1
+        },
+        {
+          "x": 9,
+          "y": 1
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 12,
+          "y": 3
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 3,
+      "arrow_moved": 20,
+      "arrow_nodes": [
+        {
+          "x": 12,
+          "y": 2
+        },
+        {
+          "x": 12,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 0
+        },
+        {
+          "x": 12,
+          "y": 0
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 4,
+      "arrow_moved": 6,
+      "arrow_nodes": [
+        {
+          "x": 11,
+          "y": 9
+        },
+        {
+          "x": 12,
+          "y": 9
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 5,
+      "arrow_moved": 15,
+      "arrow_nodes": [
+        {
+          "x": 8,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 7,
+          "y": 3
+        },
+        {
+          "x": 6,
+          "y": 3
+        },
+        {
+          "x": 6,
+          "y": 2
+        },
+        {
+          "x": 6,
+          "y": 1
+        },
+        {
+          "x": 6,
+          "y": 0
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 6,
+      "arrow_moved": 21,
+      "arrow_nodes": [
+        {
+          "x": 1,
+          "y": 8
+        },
+        {
+          "x": 0,
+          "y": 8
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 7,
+      "arrow_moved": 20,
+      "arrow_nodes": [
+        {
+          "x": 0,
+          "y": 11
+        },
+        {
+          "x": 0,
+          "y": 10
+        },
+        {
+          "x": 0,
+          "y": 9
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 8,
+      "arrow_moved": 18,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 0
+        },
+        {
+          "x": 5,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 9,
+      "arrow_moved": 16,
+      "arrow_nodes": [
+        {
+          "x": 7,
+          "y": 2
+        },
+        {
+          "x": 8,
+          "y": 2
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 10,
+      "arrow_moved": 15,
+      "arrow_nodes": [
+        {
+          "x": 12,
+          "y": 8
+        },
+        {
+          "x": 12,
+          "y": 7
+        },
+        {
+          "x": 12,
+          "y": 6
+        },
+        {
+          "x": 12,
+          "y": 5
+        },
+        {
+          "x": 12,
+          "y": 4
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 11,
+      "arrow_moved": 10,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 10
+        },
+        {
+          "x": 4,
+          "y": 10
+        },
+        {
+          "x": 3,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 11
+        },
+        {
+          "x": 2,
+          "y": 12
+        },
+        {
+          "x": 2,
+          "y": 13
+        },
+        {
+          "x": 3,
+          "y": 13
+        },
+        {
+          "x": 3,
+          "y": 14
+        },
+        {
+          "x": 2,
+          "y": 14
+        },
+        {
+          "x": 1,
+          "y": 14
+        },
+        {
+          "x": 0,
+          "y": 14
+        },
+        {
+          "x": 0,
+          "y": 13
+        },
+        {
+          "x": 0,
+          "y": 12
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 12,
+      "arrow_moved": 4,
+      "arrow_nodes": [
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 7
+        },
+        {
+          "x": 10,
+          "y": 8
+        },
+        {
+          "x": 11,
+          "y": 8
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 13,
+      "arrow_moved": 9,
+      "arrow_nodes": [
+        {
+          "x": 3,
+          "y": 4
+        },
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 2
+        },
+        {
+          "x": 5,
+          "y": 2
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 14,
+      "arrow_moved": 11,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 4
+        },
+        {
+          "x": 4,
+          "y": 4
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 15,
+      "arrow_moved": 4,
+      "arrow_nodes": [
+        {
+          "x": 12,
+          "y": 12
+        },
+        {
+          "x": 12,
+          "y": 11
+        },
+        {
+          "x": 12,
+          "y": 10
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 16,
+      "arrow_moved": 12,
+      "arrow_nodes": [
+        {
+          "x": 3,
+          "y": 9
+        },
+        {
+          "x": 2,
+          "y": 9
+        },
+        {
+          "x": 1,
+          "y": 9
+        },
+        {
+          "x": 1,
+          "y": 10
+        },
+        {
+          "x": 1,
+          "y": 11
+        },
+        {
+          "x": 1,
+          "y": 12
+        },
+        {
+          "x": 1,
+          "y": 13
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 17,
+      "arrow_moved": 9,
+      "arrow_nodes": [
+        {
+          "x": 1,
+          "y": 6
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 6
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 18,
+      "arrow_moved": 8,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 4,
+          "y": 3
+        },
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 3
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 19,
+      "arrow_moved": 9,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 6
+        },
+        {
+          "x": 5,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 8
+        },
+        {
+          "x": 5,
+          "y": 9
+        },
+        {
+          "x": 4,
+          "y": 9
+        },
+        {
+          "x": 4,
+          "y": 8
+        },
+        {
+          "x": 4,
+          "y": 7
+        },
+        {
+          "x": 4,
+          "y": 6
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 20,
+      "arrow_moved": 2,
+      "arrow_nodes": [
+        {
+          "x": 9,
+          "y": 13
+        },
+        {
+          "x": 9,
+          "y": 12
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 8,
+          "y": 13
+        },
+        {
+          "x": 7,
+          "y": 13
+        },
+        {
+          "x": 7,
+          "y": 12
+        },
+        {
+          "x": 6,
+          "y": 12
+        },
+        {
+          "x": 6,
+          "y": 11
+        },
+        {
+          "x": 5,
+          "y": 11
+        },
+        {
+          "x": 4,
+          "y": 11
+        },
+        {
+          "x": 4,
+          "y": 12
+        },
+        {
+          "x": 3,
+          "y": 12
+        },
+        {
+          "x": 3,
+          "y": 11
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 21,
+      "arrow_moved": 0,
+      "arrow_nodes": [
+        {
+          "x": 12,
+          "y": 14
+        },
+        {
+          "x": 12,
+          "y": 13
+        },
+        {
+          "x": 11,
+          "y": 13
+        },
+        {
+          "x": 11,
+          "y": 14
+        },
+        {
+          "x": 10,
+          "y": 14
+        },
+        {
+          "x": 10,
+          "y": 13
+        },
+        {
+          "x": 10,
+          "y": 12
+        },
+        {
+          "x": 11,
+          "y": 12
+        },
+        {
+          "x": 11,
+          "y": 11
+        },
+        {
+          "x": 11,
+          "y": 10
+        },
+        {
+          "x": 10,
+          "y": 10
+        },
+        {
+          "x": 10,
+          "y": 9
+        },
+        {
+          "x": 9,
+          "y": 9
+        },
+        {
+          "x": 9,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 9
+        },
+        {
+          "x": 7,
+          "y": 9
+        },
+        {
+          "x": 6,
+          "y": 9
+        },
+        {
+          "x": 6,
+          "y": 10
+        },
+        {
+          "x": 7,
+          "y": 10
+        },
+        {
+          "x": 7,
+          "y": 11
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 22,
+      "arrow_moved": 5,
+      "arrow_nodes": [
+        {
+          "x": 8,
+          "y": 14
+        },
+        {
+          "x": 9,
+          "y": 14
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 23,
+      "arrow_moved": 1,
+      "arrow_nodes": [
+        {
+          "x": 6,
+          "y": 6
+        },
+        {
+          "x": 6,
+          "y": 5
+        },
+        {
+          "x": 6,
+          "y": 4
+        },
+        {
+          "x": 7,
+          "y": 4
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 10,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 24,
+      "arrow_moved": 4,
+      "arrow_nodes": [
+        {
+          "x": 8,
+          "y": 0
+        },
+        {
+          "x": 9,
+          "y": 0
+        },
+        {
+          "x": 10,
+          "y": 0
+        },
+        {
+          "x": 10,
+          "y": 1
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 25,
+      "arrow_moved": 2,
+      "arrow_nodes": [
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 8
+        },
+        {
+          "x": 7,
+          "y": 8
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 26,
+      "arrow_moved": 1,
+      "arrow_nodes": [
+        {
+          "x": 9,
+          "y": 7
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 8,
+          "y": 6
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 6
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 27,
+      "arrow_moved": 1,
+      "arrow_nodes": [
+        {
+          "x": 5,
+          "y": 12
+        },
+        {
+          "x": 5,
+          "y": 13
+        },
+        {
+          "x": 4,
+          "y": 13
+        },
+        {
+          "x": 4,
+          "y": 14
+        },
+        {
+          "x": 5,
+          "y": 14
+        },
+        {
+          "x": 6,
+          "y": 14
+        }
+      ],
+      "blackhole_death": false
+    },
+    {
+      "move_index": 28,
+      "arrow_moved": 0,
+      "arrow_nodes": [
+        {
+          "x": 8,
+          "y": 10
+        },
+        {
+          "x": 8,
+          "y": 11
+        },
+        {
+          "x": 9,
+          "y": 11
+        },
+        {
+          "x": 9,
+          "y": 10
+        }
+      ],
+      "blackhole_death": false
+    }
+  ]
+}

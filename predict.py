@@ -10,8 +10,56 @@ from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
 import os
 
-CSV_PATH = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv_0412.csv"  # change if needed
-OUT_CSV = "levels_difficulty_0512_2.csv"
+CSV_PATH = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv_1612_2.csv"  # change if needed
+OUT_CSV = "levels_difficulty_1612_2.csv"
+
+from scipy.stats import pearsonr
+
+def plot_feature_pearson(work_df, feature_cols, target_col, title_suffix=""):
+    """
+    Plot Pearson correlation between each feature and target column.
+    """
+    corrs = []
+    pvals = []
+
+    for c in feature_cols:
+        x = work_df[c].values
+        y = work_df[target_col].values
+
+        # tránh case feature hằng số
+        if np.std(x) < 1e-8:
+            r, p = 0.0, 1.0
+        else:
+            r, p = pearsonr(x, y)
+
+        corrs.append(r)
+        pvals.append(p)
+
+    corr_df = pd.DataFrame({
+        "feature": feature_cols,
+        "pearson_r": corrs,
+        "p_value": pvals
+    }).sort_values("pearson_r")
+
+    # ===== Plot =====
+    plt.figure(figsize=(8, max(4, 0.35 * len(feature_cols))))
+    colors = ["red" if r < 0 else "steelblue" for r in corr_df["pearson_r"]]
+
+    plt.barh(
+        corr_df["feature"],
+        corr_df["pearson_r"],
+        color=colors
+    )
+
+    plt.axvline(0, color="black", linewidth=1)
+    plt.xlabel("Pearson correlation (r)")
+    plt.title(f"Feature correlation vs {target_col} {title_suffix}")
+    plt.grid(axis="x", linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+
+    return corr_df
+
 
 # Load
 if not os.path.exists(CSV_PATH):
@@ -36,9 +84,7 @@ def high_precision_pca(X_scaled):
 
 # Expected columns (adjust if your CSV differs)
 expected_cols = [
-    "Level_Name","total_arrows","total_edges","max_in_degree","edges_per_arrow",
-    "dependency_density","has_cycle_bool","critical_nodes","critical_edges",
-    "avg_row_blockers","avg_col_blockers","crowded_rows","crowded_cols"
+    "Level_Name","total_arrows","total_edges","max_in_degree","edges_per_arrow","dependency_density","has_cycle_bool","critical_longest_nodes","critical_edges_on_chain","num_wayBlockers","num_blackHoles","sum_wayBlocker_lockTime","avg_wayBlocker_lockTime","avg_row_blockers","avg_col_blockers","crowded_rows","crowded_cols"
 ]
 missing = [c for c in expected_cols if c not in df.columns]
 if missing:
@@ -78,7 +124,10 @@ proxy_weights = {
     "avg_row_blockers": 0.10,
     "avg_col_blockers": 0.10,
     "crowded_rows": 0.06,
-    "crowded_cols": 0.06
+    "crowded_cols": 0.06,
+    "num_wayBlockers": 0.10,
+    "sum_wayBlocker_lockTime": 0.10,
+    "avg_wayBlocker_lockTime": 0.10,
 }
 raw = work[num_cols]
 raw_min = raw.min()
@@ -124,43 +173,68 @@ work["is_outlier_if_1"] = (iso_pred == -1).astype(int)
 out_cols = ["Level_Name"] + num_cols + ["PC1_raw","DifficultyScore_0_10","kmeans_cluster","DifficultyLabel","is_outlier_if_1"]
 result = work[out_cols].copy()
 result.to_csv(OUT_CSV, index=False)
+# ================================
+# PEARSON CORRELATION DIAGNOSTICS
+# ================================
 
-# Diagnostics prints
-print("Saved difficulty results to:", OUT_CSV)
-print("PCA explained variance ratio (first components):", np.round(pca.explained_variance_ratio_[:n_pca_for_kmeans], 4))
-print("Correlation between PC1 and heuristic proxy (should be positive):", float(corr))
-print("\nCluster -> mean difficulty (0-10):")
-print(work.groupby("DifficultyLabel")["DifficultyScore_0_10"].mean().sort_values())
+# 1. Correlation vs DifficultyScore (0-10)
+corr_diff = plot_feature_pearson(
+    work_df=work,
+    feature_cols=num_cols,
+    target_col="DifficultyScore_0_10",
+    title_suffix="(DifficultyScore 0–10)"
+)
 
-# Plots (matplotlib)
-plt.figure(figsize=(8,4))
-plt.hist(difficulty_score, bins=15)
-plt.title("Distribution of DifficultyScore (0-10) from PC1")
-plt.xlabel("DifficultyScore (0-10)")
-plt.ylabel("Count")
-plt.tight_layout()
-plt.show()
+print("\nTop correlated features with DifficultyScore:")
+print(corr_diff.sort_values("pearson_r", ascending=False).head(5))
 
-plt.figure(figsize=(7,6))
-if X_pca.shape[1] >= 2:
-    plt.scatter(X_pca[:,0], X_pca[:,1], c=work["kmeans_cluster"])
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
-    plt.title("PC1 vs PC2 (colored by KMeans cluster)")
-else:
-    plt.scatter(X_pca[:,0], np.zeros_like(X_pca[:,0]), c=work["kmeans_cluster"])
-    plt.xlabel("PC1")
-    plt.title("PC1 (only one PCA component available)")
-plt.tight_layout()
-plt.show()
+# 2. Correlation vs PC1 (raw)
+corr_pc1 = plot_feature_pearson(
+    work_df=work,
+    feature_cols=num_cols,
+    target_col="PC1_raw",
+    title_suffix="(PC1 raw)"
+)
 
-plt.figure(figsize=(8,3))
-y = np.zeros_like(pc1)
-plt.scatter(pc1, y, s=20)
-out_idx = work["is_outlier_if_1"] == 1
-plt.scatter(pc1[out_idx], y[out_idx], s=40)
-plt.title("Outliers flagged by IsolationForest on PC1 axis")
-plt.yticks([])
-plt.xlabel("PC1 (raw)")
-plt.tight_layout()
-plt.show()
+print("\nTop correlated features with PC1:")
+print(corr_pc1.sort_values("pearson_r", ascending=False).head(5))
+
+# # Diagnostics prints
+# print("Saved difficulty results to:", OUT_CSV)
+# print("PCA explained variance ratio (first components):", np.round(pca.explained_variance_ratio_[:n_pca_for_kmeans], 4))
+# print("Correlation between PC1 and heuristic proxy (should be positive):", float(corr))
+# print("\nCluster -> mean difficulty (0-10):")
+# print(work.groupby("DifficultyLabel")["DifficultyScore_0_10"].mean().sort_values())
+
+# # Plots (matplotlib)
+# plt.figure(figsize=(8,4))
+# plt.hist(difficulty_score, bins=15)
+# plt.title("Distribution of DifficultyScore (0-10) from PC1")
+# plt.xlabel("DifficultyScore (0-10)")
+# plt.ylabel("Count")
+# plt.tight_layout()
+# plt.show()
+
+# plt.figure(figsize=(7,6))
+# if X_pca.shape[1] >= 2:
+#     plt.scatter(X_pca[:,0], X_pca[:,1], c=work["kmeans_cluster"])
+#     plt.xlabel("PC1")
+#     plt.ylabel("PC2")
+#     plt.title("PC1 vs PC2 (colored by KMeans cluster)")
+# else:
+#     plt.scatter(X_pca[:,0], np.zeros_like(X_pca[:,0]), c=work["kmeans_cluster"])
+#     plt.xlabel("PC1")
+#     plt.title("PC1 (only one PCA component available)")
+# plt.tight_layout()
+# plt.show()
+
+# plt.figure(figsize=(8,3))
+# y = np.zeros_like(pc1)
+# plt.scatter(pc1, y, s=20)
+# out_idx = work["is_outlier_if_1"] == 1
+# plt.scatter(pc1[out_idx], y[out_idx], s=40)
+# plt.title("Outliers flagged by IsolationForest on PC1 axis")
+# plt.yticks([])
+# plt.xlabel("PC1 (raw)")
+# plt.tight_layout()
+# plt.show()

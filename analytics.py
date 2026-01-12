@@ -10,6 +10,11 @@ from collections import defaultdict, deque
 # 1. PARSER: LOAD LEVEL JSON
 # ============================================================
 def load_level(path):
+    # Only process files explicitly marked as original; otherwise, skip.
+    if not path.endswith(".json"):
+        print(f"Skip non-original file: {path}")
+        return None
+
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -195,8 +200,6 @@ def metric_blocking_density_per_axis(level_json, G):
     crowded_cols = sum(1 for c in col_counts if c >= threshold)
 
     return {
-        "max_row_blockers": max_row,
-        "max_col_blockers": max_col,
         "avg_row_blockers": avg_row,
         "avg_col_blockers": avg_col,
         "crowded_rows": crowded_rows,
@@ -283,18 +286,20 @@ def export_metrics_to_csv(metrics_dict, out_path):
 # ============================================================
 def analyze_level_graph(json_path, csv_path="level_metrics.csv"):
     data = load_level(json_path)
+    if data is None:
+        return None, None
     G = build_dependency_graph(data)
 
     # Basic metrics
     basic = {
         "total_arrows": metric_total_arrows(data),
-        "total_dependencies": metric_total_dependencies(G),
+        "total_edges": metric_total_dependencies(G),
         "max_in_degree": metric_max_in_degree(G),
         "edges_per_arrow": metric_edges_per_arrow(G),
         "dependency_density": metric_dependency_density(G),
         "has_cycle_bool": metric_has_cycle_fast(G),
     }
-
+    mechanic = metric_mechanics_basic(data)
     # Blocking density per axis
     blocking_density = metric_blocking_density_per_axis(data, G)
 
@@ -303,24 +308,74 @@ def analyze_level_graph(json_path, csv_path="level_metrics.csv"):
 
     metrics = {}
     metrics.update(basic)
-
-    metrics.update(blocking_density)
     metrics.update(critical_path)
+    metrics.update(mechanic)
+    metrics.update(blocking_density)
 
     # Export CSV
     export_metrics_to_csv(metrics, csv_path)
     print("CSV exported:", csv_path)
     return metrics, G
 
+# ============================================================
+# 7. MECHANIC ANALYSIS FUNCTION
+# ============================================================
+def metric_mechanics_basic(level_json):
+    way_blockers = level_json.get("wayBlockers", [])
+    black_holes = level_json.get("blackHoles", [])
+
+    # Deduplicate mechanics by coordinate so overlapping entries count once.
+    def dedup_by_coord(items):
+        seen = set()
+        unique = []
+        for item in items:
+            pos = item.get("position") or {}
+            # Support both nested position and flat x/y
+            coord = (
+                pos.get("x", item.get("x")),
+                pos.get("y", item.get("y")),
+            )
+            if coord in seen:
+                continue
+            seen.add(coord)
+            unique.append(item)
+        return unique
+
+    wb_unique = dedup_by_coord(way_blockers)
+    bh_unique = dedup_by_coord(black_holes)
+
+    num_wb = len(wb_unique)
+    num_bh = len(bh_unique)
+
+    def get_lock_time(wb):
+        # lockTime can sit at top-level per provided example
+        return wb.get("lockTime", 0)
+
+    lock_times = [get_lock_time(wb) for wb in wb_unique]
+
+    return {
+        "num_wayBlockers": num_wb,
+        "num_blackHoles": num_bh,
+        "sum_wayBlocker_lockTime": sum(lock_times),
+        "avg_wayBlocker_lockTime": (
+            sum(lock_times) / num_wb if num_wb > 0 else 0.0
+        ),
+    }
+
+# ============================================================
+# 7. MECHANIC ANALYSIS FUNCTION
+# ============================================================
 def sort_level_files(files):
     """
     Sort files like lv0.json, lv1.json, lv10.json numerically by level index.
     """
     def extract_level_num(f):
-        match = re.search(r'lv(\d+)\.json', f)
-        return int(match.group(1)) if match else -1
+        # Accept suffix variants: lv0_original.json, lv0_ox.json, lv0.json
+        match = re.search(r"lv(\d+)(?:_.*)?\.json$", f)
+        return int(match.group(1)) if match else float("inf")
 
-    return sorted(files, key=extract_level_num)
+    # Stable sort keeps relative order among equal keys; fallback key keeps non-matching at end
+    return sorted(files, key=lambda f: (extract_level_num(f), f))
 
 def analyze_levels_in_folder(folder_path, csv_path="all_levels_metrics.csv", n_level=None):
     """
@@ -332,6 +387,7 @@ def analyze_levels_in_folder(folder_path, csv_path="all_levels_metrics.csv", n_l
         n_level (int, optional): Maximum number of levels to process. If None, process all.
     """
     all_metrics = []
+    # Process only original JSONs and keep deterministic numeric order
     files = [f for f in os.listdir(folder_path) if f.endswith(".json")]
     files = sort_level_files(files)
     if n_level is not None:
@@ -341,6 +397,8 @@ def analyze_levels_in_folder(folder_path, csv_path="all_levels_metrics.csv", n_l
     for file_name in files:
         json_path = os.path.join(folder_path, file_name)
         metrics, _ = analyze_level_graph(json_path)
+        if metrics is None:
+            continue
         metrics_row = {"Level_Name": file_name}
         metrics_row.update(metrics)
         all_metrics.append(metrics_row)
@@ -350,15 +408,15 @@ def analyze_levels_in_folder(folder_path, csv_path="all_levels_metrics.csv", n_l
     df.to_csv(csv_path, index=False)
     print(f"CSV exported for {len(all_metrics)} levels to:", csv_path)
     return df
-# ============================================================
-# RUN AS SCRIPT (EXAMPLE)
-# ============================================================
+
+
+
 if __name__ == "__main__":
     # json_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/asset-game-level/lv8.json"
     # csv_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/lv8_metrics_new.csv"
     # metrics, G = analyze_level_graph(json_path, csv_path=csv_path)
 
-    folder_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv/"
-    csv_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv_0412.csv"
-    df = analyze_levels_in_folder(folder_path, csv_path=csv_path, n_level=100)
+    folder_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/level_2"
+    csv_path = "/Users/hoangnguyen/Documents/py/ArrowPuzzle/100lv_1612_2.csv"
+    df = analyze_levels_in_folder(folder_path, csv_path=csv_path, n_level=None)
     

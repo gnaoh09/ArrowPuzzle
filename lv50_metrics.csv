@@ -1,9 +1,0 @@
-Metric,Value
-total_arrows,45
-total_dependencies,184
-avg_indegree,4.088888888888889
-avg_outdegree,4.088888888888889
-max_dependency_depth,-1
-num_cycles,122645095
-connected_components,2
-dependency_density,0.09292929292929293
