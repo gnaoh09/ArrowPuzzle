@@ -9,3 +9,5 @@ lib/*
 .DS_Store
 *.apk
 *.xlsx
+*.json
+
