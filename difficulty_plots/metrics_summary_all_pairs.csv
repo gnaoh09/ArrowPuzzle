@@ -1,0 +1,4 @@
+name1,name2,mae,rmse,max_deviation,pearson_r,p_value,correlation_strength
+Độ khó tự giải,Độ khó cấu trúc,0.5,0.7615773105863908,2,0.6684144289456739,1.1308872574037379e-07,Mạnh
+Độ khó tự giải,Win Rate Score,1.04,1.3856406460551018,3,0.08424452023755849,0.5607907559183246,Rất yếu
+Độ khó cấu trúc,Win Rate Score,0.94,1.407124727947029,4,0.013847982525387287,0.9239591024511515,Rất yếu
