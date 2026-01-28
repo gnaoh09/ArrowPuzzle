@@ -300,7 +300,7 @@ def plot_two_lines_with_metrics(df,
     if filename is None:
         filename = f"plot_{line1_name}_vs_{line2_name}_with_metrics.png"
     
-    filepath = f'D:\py\ArrowPuzzle\difficulty_plots/{filename}'
+    filepath = f'difficulty_plots/{filename}'
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
     print(f"✓ Đã lưu: {filename}")
     plt.show()
@@ -373,7 +373,7 @@ def analyze_all_pairs(df, save_summary=True):
     
     # Save summary
     if save_summary:
-        metrics_df.to_csv('D:\py\ArrowPuzzle\difficulty_plots/metrics_summary_all_pairs.csv', index=False)
+        metrics_df.to_csv('difficulty_plots/metrics_summary_all_pairs.csv', index=False)
         print("\n✓ Đã lưu: metrics_summary_all_pairs.csv")
     
     return all_metrics
@@ -453,7 +453,7 @@ def create_comparison_chart(all_metrics):
     plt.suptitle("So sánh Metrics cho tất cả các cặp 2 đường", 
                  fontsize=14, fontweight='bold', y=0.995)
     
-    plt.savefig('D:\py\ArrowPuzzle\difficulty_plots/metrics_comparison_all.png', dpi=300, bbox_inches='tight')
+    plt.savefig('difficulty_plots/metrics_comparison_all.png', dpi=300, bbox_inches='tight')
     print("\n✓ Đã lưu: metrics_comparison_all.png")
     plt.show()
 
@@ -462,7 +462,7 @@ def create_comparison_chart(all_metrics):
 # ================================
 if __name__ == "__main__":
     # Load data
-    filepath ="D:\\py\\ArrowPuzzle\\[ArrowPuzzle] Đánh giá độ khó - Sheet2.csv"
+    filepath ="/Users/hoangnguyen/Documents/py/ArrowPuzzle/[ArrowPuzzle] Đánh giá độ khó - Sheet2.csv"
     df = load_and_prepare_data(filepath, num_levels=50)
     
     print("\n✓ Đã load {} levels".format(len(df)))
